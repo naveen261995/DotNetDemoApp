@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sampleapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sampleapp
+  template:
+    metadata:
+      labels:
+        app: sampleapp
+    spec:
+      containers:
+      - name: sampleapp
+        image: naveenacr2026.azurecr.io/sampleapp:$(Build.BuildId)
+        ports:
+        - containerPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sampleapp-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: sampleapp
+  ports:
+    - port: 80
+      targetPort: 80
