@@ -31,9 +31,20 @@ steps:
 
 - task: Docker@2
   inputs:
-    containerRegistry: 'ACRServiceConnection' # <-- to be created
+    containerRegistry: 'ACRServiceConnection'
     repository: '$(imageName)'
     command: 'buildAndPush'
     Dockerfile: '**/Dockerfile'
     tags: |
       $(Build.BuildId)
+
+- task: Kubernetes@1
+  inputs:
+    connectionType: 'Azure Resource Manager'
+    azureSubscription: 'AzureRMServiceConnection'
+    azureResourceGroup: 'DevOpsRG'
+    kubernetesCluster: 'naveenaks2026'
+    namespace: 'default'
+    command: 'apply'
+    useConfigurationFile: true
+    configuration: 'manifests/deployment.yaml'
