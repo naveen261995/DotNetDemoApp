@@ -1,0 +1,50 @@
+trigger:
+  branches:
+    include:
+      - master
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  imageName: 'sampleapp'
+
+steps:
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '6.x.x'
+
+- task: NuGetToolInstaller@1
+
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '**/*.sln'
+
+- task: VSBuild@1
+  inputs:
+    solution: '**/*.sln'
+    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package'
+    platform: 'Any CPU'
+    configuration: '$(buildConfiguration)'
+
+- task: Docker@2
+  inputs:
+    containerRegistry: 'ACRServiceConnection'
+    repository: '$(imageName)'
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
+    tags: |
+      $(Build.BuildId)
+
+- task: Kubernetes@1
+  inputs:
+    connectionType: 'Azure Resource Manager'
+    azureSubscription: 'AzureRMServiceConnection'
+    azureResourceGroup: 'DevOpsRG'
+    kubernetesCluster: 'naveenaks2026'
+    namespace: 'default'
+    command: 'apply'
+    useConfigurationFile: true
+    configuration: 'manifests/deployment.yaml'
