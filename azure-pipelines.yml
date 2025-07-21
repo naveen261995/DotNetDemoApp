@@ -4,7 +4,7 @@ trigger:
       - master
 
 pool:
-  name: 'Windows'
+  name: Windows
 
 variables:
   buildConfiguration: 'Release'
